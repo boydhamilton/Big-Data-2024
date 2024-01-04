@@ -25,7 +25,7 @@ run=True
 while run:
     desired_species = input("Species to plot: ")
     
-    if(desired_species=="exit"): # gotta have exit code for looping program
+    if(desired_species=="exit"): # need to have exit code for looping program
         run=False
         quit()
 
@@ -45,7 +45,6 @@ while run:
     for point in coordinates:
         if(not (point in coordinates_culled)):
             try:
-                # HOW DOES LATITUDE AND LONGITUDE WORK WHAT
                 longitude.append(float(point[0]))
                 latitude.append(float(point[1]))
                 

@@ -32,9 +32,9 @@ richness_data=[float(row[7])+random.uniform(-0.1,0.1) for row in rows if(row[4]=
 z = np.polyfit(richness_data, miner_data, 1)
 p = np.poly1d(z)
 
-coefficient_of_dermination = r2_score(miner_data, p(richness_data))
+coefficient_of_determination = r2_score(miner_data, p(richness_data))
 
-print(coefficient_of_dermination)
+print(coefficient_of_determination)
 
 plt.plot(richness_data, p(richness_data),color="red") # trendline
 

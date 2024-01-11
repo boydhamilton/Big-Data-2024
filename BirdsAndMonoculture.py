@@ -47,9 +47,9 @@ x_values=[0,1,2,3,4]
 z = np.polyfit(x_values, ranked_values, 1)
 p = np.poly1d(z)
 
-coefficient_of_dermination = r2_score(ranked_values, p(x_values))
+coefficient_of_determination = r2_score(ranked_values, p(x_values))
 
-print(coefficient_of_dermination)
+print(coefficient_of_determination)
 
 plt.plot(x_values, p(x_values),color="red") # trendline
 

@@ -21,9 +21,8 @@ with open(filename, 'r') as csvfile:
 
     print("Rows: ", str(csvreader.line_num))
 
-run=True
-while run:
-    desired_species = input("Species to plot: ")
+def run (desired_species, x=0, y=0):
+    #desired_species = input("Species to plot: ")
     
     if(desired_species=="exit"): # need to have exit code for looping program
         run=False
@@ -51,12 +50,13 @@ while run:
                 coordinates_culled.append(point)
                 size.append(coordinates.count(point))
             except:
-                print("conversion fail "+point[0]+" or "+point[1]) # failure stems from the fact that many samples have unrecorded latitudes and longitudes
+                pass # failure stems from the fact that many samples have unrecorded latitudes and longitudes
 
     # clamp graph display to range representitive of canada. overlay is doing too much, this allows us to still get an idea of position in space
     plt.xlim(-145,-40)
     plt.ylim(40,80)
     plt.scatter(latitude,longitude,s=size)
+    plt.plot(x, y, color='red', marker='o', linestyle='dashed',markersize=2)
     plt.show()
 
 

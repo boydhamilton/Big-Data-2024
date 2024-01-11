@@ -24,6 +24,24 @@ with open(filename, 'r') as csvfile:
 def dist(a,b): # [x,y], [x,y]
     return math.sqrt(abs(b[0]-a[0]) + abs(b[1]-a[1]))
 
+# distance accurate and accounting for the earths curvature. result is returned in kilometers
+def haversine(a,b): # [longitude, latitude]
+    lat1=a[1]
+    lon1=a[0]
+    lat2=b[1]
+    lon2=b[0]
+    
+    R = 6371  # earth radius in kilometers
+
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+
+    a = math.sin(dlat / 2) ** 2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) ** 2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+    distance = R * c
+    return distance
+
 def getposition(row):
     if(row[18]!=''and row[17]!=''and row!=rows[0]):
         return [float(row[18]),float(row[17])]
@@ -43,7 +61,7 @@ def native_score(x, y, species):
     if(len(xarr)!=0 and len(yarr)!=0):
         xavg=sum(xarr)/len(xarr)
         yavg=sum(yarr)/len(yarr)
-        return dist([x,y],[xavg,yavg]) # smaller is better
+        return haversine([x,y],[xavg,yavg])/125 # scale
     else:
         return 0
 
@@ -61,9 +79,9 @@ def biodiversity_score(long, lat, species, acceptable_range=6):
         name = row[7]
         point = getposition(row)
         if(point!=None):
-            if(dist([x,y],point)<=acceptable_range):
+            if(haversine([x,y],point)<=acceptable_range):
                 sia.append(name)
-            if(dist([x,y],point)<=acceptable_range and name not in sia_culled):
+            if(haversine([x,y],point)<=acceptable_range and name not in sia_culled):
                 sia_culled.append(name)
 
 
@@ -82,10 +100,9 @@ def biodiversity_score(long, lat, species, acceptable_range=6):
     # returns 0 for most common/least diverse so dont make multiplier cause biodiversity is not that serious
     # small if native. big if not native. in all honesty might want to judge more off domain specification than big or small
     # as approaching zero could encourage monoculture but approaching big number could lead to low survivability
-    # find whatever a big number seems (8? 9?) and do between 1 and that methinks
+    # find whatever a big number seems (8? 9?) and do between 1 and that
     # FOR FINAL EQUATION: if you have small native score and big biodiversity score? YOU FOUND THE ONE
     # means its growth should be encouraged, as it's in the area but being beaten out by more common species
-    # print(sia)
     if(species in ranked_species):
         return (ranked_counts[ranked_species.index(species)] * ranked_species.index(species)) / (sum(ranked_counts)/len(ranked_counts))
     else:
@@ -94,26 +111,26 @@ def biodiversity_score(long, lat, species, acceptable_range=6):
 
 # TODO: on the low no way om_total is mass of tree so this needs to be fixed this is genuine nonsense
 def carbonSequesteration_score(x, y, species):
-    species_list = [row for row in rows if(row[7]==species)] # HOW DOES THIS WORK LMAO PYTHON IS SO DUMB
-    
-    avg_species_mass=0 # on the low just *assuming* om_total is mass of tree
-    # okie dokie carbon = 0.5(mass) tree organic chem formula i take internets word for it
-    # do i care abt location?? for now i shall not include
-    for row in species_list:
-        avg_species_mass = float(row[16])
+    species_list = [row for row in rows if(row[7]==species)]
+    summation_list=[]
+    for specimen in species_list:
+        try:
+            summation_list.append(float(specimen[11]))
+        except:
+            pass
 
-    avg_species_mass=avg_species_mass/len(species_list)
+    avg_species_mass=sum(summation_list)/len(species_list)
 
-    return avg_species_mass
+    return avg_species_mass/50 # scale down
 
 def repopulation_score(lat,long,species,acceptable_range=6): # lat is y row[17] long is x row[18]
     ns=native_score(long, lat, species)
     bs=biodiversity_score(long, lat, species, acceptable_range)
-    # print(str(ns)+" "+str(bs))
-    # cs=carbonSequesteration_score(long, lat, species)
+    cs=carbonSequesteration_score(long, lat, species)
+    print("C: "+str(cs))
 
     if(ns!=0):
-        final_score = (bs / ns) #+ cs figure out carbon first
+        final_score = (bs + cs) / ns  #figure out carbon first
     else:
         final_score = 0
     return final_score
@@ -126,24 +143,20 @@ def best_tree(long,lat,acceptable_range=6):
     species_array=[]
     for row in rows:
         if(getposition(row)!=None):
-            if(dist([x,y],getposition(row))<=acceptable_range and row[7]not in species_array):
+            if(haversine([x,y],getposition(row))<=acceptable_range and row[7]not in species_array):
                 species_array.append(row[7])
-        else:
-            print('fuck')
 
     for current_species in species_array:
         current_rs = repopulation_score(y,x,current_species,acceptable_range)
-        #print(str(current_rs)+" "+str(best[0]))
         print(current_rs)
         if(current_rs>best[0]): # TODO: double check biggest is best
             best=[current_rs,current_species]
-            # print("split "+ str(native_score(long,lat,current_species)) + " "+str(biodiversity_score(long,lat,current_species,acceptable_range)))
             print("NEW BEST: "+str(current_rs))
 
     return best
 
 
-from_user = [int(item) for item in input("Enter 'lat,long,acceptablerange': ").split(',')] # exact formatting for input (this is silly python code)
+from_user = [float(item) for item in input("Enter 'lat,long,acceptablerange': ").split(',')] # exact formatting for input (this is silly python code)
 
 values= from_user #lat long acceptablerange
 
@@ -152,7 +165,8 @@ choice = choice_table[1] # species
 score = choice_table[0] # score
 
 print("\nAt: "+str(values[0])+", "+str(values[1]))
-print("N: "+str(native_score(values[1], values[0], choice))+ " B: "+str(biodiversity_score(values[1], values[0], choice, values[2])))
+print("N: "+str(native_score(values[1], values[0], choice))+ " B: "+str(biodiversity_score(values[1], values[0], choice, values[2]))
+      +" C: "+str(carbonSequesteration_score(values[1],values[0],choice)))
 print("Score: "+str(score))
 print(choice)
 

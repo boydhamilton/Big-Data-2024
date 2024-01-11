@@ -17,7 +17,6 @@ with open(filename, 'r') as csvfile:
     for row in csvreader:
         rows.append(row)
 
-    print("Rows: ", str(csvreader.line_num))
 
 # bar graph. xaxis has 'location species' and then the height value is amount. 
 # to accomplish this, one first has to get all the different locations and species to populate the xaxis with the needed bars
@@ -33,12 +32,12 @@ for row in rows:
 # logic here is that locations should appear sequentially, ergo if we put the amount in the same order it should line up
 location_culled = []
 for locale in location:
-    print(location.count(locale))
     if(not (locale in location_culled)):
         amount.append(location.count(locale))
         location_culled.append(locale)
     else:
-        print(locale + " previously tested")
+        #print(locale + " previously tested")
+        pass
 
 
 plt.barh(y = location_culled, width = amount, color ='maroon', 

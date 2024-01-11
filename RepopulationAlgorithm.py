@@ -21,7 +21,7 @@ with open(filename, 'r') as csvfile:
 
 
 # staples
-def dist(a,b): # [x,y], [x,y]
+def dist(a,b): # UNUSED
     return math.sqrt(abs(b[0]-a[0]) + abs(b[1]-a[1]))
 
 # distance accurate and accounting for the earths curvature. result is returned in kilometers
@@ -42,6 +42,7 @@ def haversine(a,b): # [longitude, latitude]
     distance = R * c
     return distance
 
+# turned to method due to amount of use
 def getposition(row):
     if(row[18]!=''and row[17]!=''and row!=rows[0]):
         return [float(row[18]),float(row[17])]
@@ -61,12 +62,12 @@ def native_score(x, y, species):
     if(len(xarr)!=0 and len(yarr)!=0):
         xavg=sum(xarr)/len(xarr)
         yavg=sum(yarr)/len(yarr)
-        return haversine([x,y],[xavg,yavg])/125 # scale
+        return haversine([x,y],[xavg,yavg])
     else:
         return 0
 
 
-def biodiversity_score(long, lat, species, acceptable_range=6):
+def biodiversity_score(long, lat, species, acceptable_range=10000):
     # get species in range, number of choice species in area over number of average species in area? idk 
     # range in distance measured by lat long. totally arbitrary. tune maybe? should be big, we just take topmost common species
     
@@ -104,30 +105,37 @@ def biodiversity_score(long, lat, species, acceptable_range=6):
     # FOR FINAL EQUATION: if you have small native score and big biodiversity score? YOU FOUND THE ONE
     # means its growth should be encouraged, as it's in the area but being beaten out by more common species
     if(species in ranked_species):
-        return (ranked_counts[ranked_species.index(species)] * ranked_species.index(species)) / (sum(ranked_counts)/len(ranked_counts))
+        return (ranked_counts[ranked_species.index(species)] * ranked_species.index(species))
     else:
         return 0
 
 
-# TODO: on the low no way om_total is mass of tree so this needs to be fixed this is genuine nonsense
-def carbonSequesteration_score(x, y, species):
-    species_list = [row for row in rows if(row[7]==species)]
+def carbonSequesteration_score(long, lat, species, acceptable_range):
     summation_list=[]
+    species_list=[]
+    for row in rows:
+        if(row[7]==species):
+            try:
+                if(haversine(getposition(row),[long,lat])<=acceptable_range*1.5): # can estimate little beyond given area for this
+                    species_list.append(row)
+            except:
+                pass
+
     for specimen in species_list:
         try:
-            summation_list.append(float(specimen[11]))
+            summation_list.append(float(specimen[11])/4) # estimation of carbon is (total wood mass / 2) / 2 as you must first isolate dry wood, which is about 48-50% carbon
         except:
             pass
+    
 
-    avg_species_mass=sum(summation_list)/len(species_list)
+    avg_species_mass=sum(summation_list)/len(summation_list)
 
-    return avg_species_mass/50 # scale down
+    return avg_species_mass*2 # scale up
 
-def repopulation_score(lat,long,species,acceptable_range=6): # lat is y row[17] long is x row[18]
+def repopulation_score(lat, long, species, acceptable_range=10000): # lat is y row[17] long is x row[18]
     ns=native_score(long, lat, species)
     bs=biodiversity_score(long, lat, species, acceptable_range)
-    cs=carbonSequesteration_score(long, lat, species)
-    print("C: "+str(cs))
+    cs=carbonSequesteration_score(long, lat, species, acceptable_range)
 
     if(ns!=0):
         final_score = (bs + cs) / ns  #figure out carbon first
@@ -135,7 +143,7 @@ def repopulation_score(lat,long,species,acceptable_range=6): # lat is y row[17] 
         final_score = 0
     return final_score
 
-def best_tree(long,lat,acceptable_range=6):
+def best_tree(long,lat,acceptable_range=10000):
     y = lat
     x = long
     best=[0,""] # score, species
@@ -148,7 +156,7 @@ def best_tree(long,lat,acceptable_range=6):
 
     for current_species in species_array:
         current_rs = repopulation_score(y,x,current_species,acceptable_range)
-        print(current_rs)
+        # print(current_rs)
         if(current_rs>best[0]): # TODO: double check biggest is best
             best=[current_rs,current_species]
             print("NEW BEST: "+str(current_rs))
@@ -166,7 +174,7 @@ score = choice_table[0] # score
 
 print("\nAt: "+str(values[0])+", "+str(values[1]))
 print("N: "+str(native_score(values[1], values[0], choice))+ " B: "+str(biodiversity_score(values[1], values[0], choice, values[2]))
-      +" C: "+str(carbonSequesteration_score(values[1],values[0],choice)))
+      +" C: "+str(carbonSequesteration_score(values[1], values[0], choice, values[2])))
 print("Score: "+str(score))
 print(choice)
 

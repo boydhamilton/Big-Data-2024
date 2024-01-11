@@ -30,4 +30,7 @@ p = np.poly1d(z)
 plt.plot(richness_data, p(richness_data),color='red')
 
 plt.scatter(richness_data,mildew_data)
+plt.xlabel("Species Richness")
+plt.ylabel("Predicted powdery oak mildew infection")
+plt.title("Canadian Trees")
 plt.show()

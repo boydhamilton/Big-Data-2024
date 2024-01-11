@@ -19,8 +19,6 @@ with open(filename, 'r') as csvfile:
     for row in csvreader:
         rows.append(row)
 
-    print("Rows: ", str(csvreader.line_num))
-
 def run (desired_species, x=0, y=0):
     #desired_species = input("Species to plot: ")
     
@@ -57,7 +55,10 @@ def run (desired_species, x=0, y=0):
     plt.ylim(40,80)
     plt.scatter(latitude,longitude,s=size)
     plt.plot(x, y, color='red', marker='o', linestyle='dashed',markersize=2)
+    plt.xlabel("Longitude")
+    plt.ylabel("Latitude")
+    plt.title(desired_species+" position")
     plt.show()
 
 
-    
+#run("Black Spruce")

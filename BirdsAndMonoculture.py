@@ -20,12 +20,10 @@ column_count = {}
     
 with open(filename, 'r') as csv_file:
     csv_reader = csv.DictReader(csv_file)
-    
-    # Assuming the first row contains column headers
+
     for column in csv_reader.fieldnames:
         columns[column] = []
-    
-    # Iterate through each row and append values to respective columns
+
     for row in csv_reader:
         for column in csv_reader.fieldnames:
             columns[column].append(row[column])
@@ -42,18 +40,32 @@ ranked_data = sorted(combo, key=lambda x: x[1], reverse=True)
 ranked_keys = [item[0] for item in ranked_data]
 ranked_values = [item[1] for item in ranked_data]
 
+avg_monoculture=[column_count[key] for key in column_count if("monoculture" in key.lower())]
+avg_native=[column_count[key] for key in column_count if("monoculture" not in key.lower())]
+
+avg_monoculture_v = sum(avg_monoculture)/len(avg_monoculture)
+avg_native_v = sum(avg_native)/len(avg_native)
+
 x_values=[0,1,2,3,4]
 
 z = np.polyfit(x_values, ranked_values, 1)
 p = np.poly1d(z)
-
 coefficient_of_determination = r2_score(ranked_values, p(x_values))
+print("Brunt r2 value :"+str(coefficient_of_determination))
 
-print(coefficient_of_determination)
+z_2 = np.polyfit([1,2], [avg_native_v, avg_monoculture_v], 1)
+p_2 = np.poly1d(z_2)
+coefficient_of_determination_2 = r2_score(ranked_values, p(x_values))
+print("Mean r2 value :"+str(coefficient_of_determination_2))
+
+
 
 plt.plot(x_values, p(x_values),color="red") # trendline
-
+plt.plot([5,6], p_2([1,2]) , color="purple")
 plt.bar(ranked_keys, ranked_values)
+
+plt.bar(["Native Mean", "Monoculture Mean"], [avg_native_v, avg_monoculture_v], color="pink")
+
 
 plt.xlabel("Tree Species")
 plt.ylabel("Birds in Biome")

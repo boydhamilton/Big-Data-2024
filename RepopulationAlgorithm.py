@@ -42,6 +42,7 @@ def haversine(a,b): # [longitude, latitude]
     distance = R * c
     return distance
 
+
 # turned to method due to amount of use
 def getposition(row):
     if(row[18]!=''and row[17]!=''and row!=rows[0]):
@@ -159,23 +160,23 @@ def best_tree(long,lat,acceptable_range=10000):
         # print(current_rs)
         if(current_rs>best[0]): # TODO: double check biggest is best
             best=[current_rs,current_species]
-            print("NEW BEST: "+str(current_rs))
+            #print("NEW BEST: "+str(current_rs))
 
     return best
 
 
-from_user = [float(item) for item in input("Enter 'lat,long,acceptablerange': ").split(',')] # exact formatting for input (this is silly python code)
+# from_user = [float(item) for item in input("Enter 'lat,long,acceptablerange': ").split(',')] # exact formatting for input (this is silly python code)
 
-values= from_user #lat long acceptablerange
+# values= from_user #lat long acceptablerange
 
-choice_table = best_tree(values[1],values[0],values[2])
-choice = choice_table[1] # species
-score = choice_table[0] # score
+# choice_table = best_tree(values[1],values[0],values[2])
+# choice = choice_table[1] # species
+# score = choice_table[0] # score
 
-print("\nAt: "+str(values[0])+", "+str(values[1]))
-print("N: "+str(native_score(values[1], values[0], choice))+ " B: "+str(biodiversity_score(values[1], values[0], choice, values[2]))
-      +" C: "+str(carbonSequesteration_score(values[1], values[0], choice, values[2])))
-print("Score: "+str(score))
-print(choice)
+# print("\nAt: "+str(values[0])+", "+str(values[1]))
+# print("N: "+str(native_score(values[1], values[0], choice))+ " B: "+str(biodiversity_score(values[1], values[0], choice, values[2]))
+#       +" C: "+str(carbonSequesteration_score(values[1], values[0], choice, values[2])))
+# print("Score: "+str(score))
+# print(choice)
 
-SpeciesLocationPlot.run(choice,values[1],values[0])
+# SpeciesLocationPlot.run(choice,values[1],values[0])

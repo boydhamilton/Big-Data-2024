@@ -1,25 +1,27 @@
 # Big-Data-2024
 ## excerpt
 
-Algorithm
-Scoring 
+## 2.3 Algorithm
+### 2.3.1 Scoring 
 The goal of the algorithm is to predict the best possible tree to plant at any given point. One first must determine how the trees will be graded and compared, and define what the archetypal tree would look like according to the criteria. Once this is determined, we can pass three arguments to a scoring algorithm: latitude, longitude and species. The position is the only constant, as species are iterated through and tested against one another in order to determine which has the highest score. Our criteria is that the tree should be able to thrive in the area, should increase biodiversity and discourage monoculture, and help the forest become an efficient carbon sink.
-Native Score (N-Score)
-The N-Score is quite simple. An important facet of whether or not a tree may be a good fit for a given area is determining whether or not a tree would survive in a given area. The N-Score is the distance in kilometers between the given coordinates and the average position of the species in longitude and latitude. The distance between the two points is determined by the Haversine formula [source]. 
 
+### 2.3.2 Native Score (N-Score)
+The N-Score is quite simple. An important facet of whether or not a tree may be a good fit for a given area is determining whether or not a tree would survive in a given area. The N-Score is the distance in kilometers between the given coordinates and the average position of the species in longitude and latitude. The distance between the two points is determined by the Haversine formula [source]. 
 The result is a close estimate of the distance between two longitude and latitude points, while accounting for the Earth’s curvature. This eliminates the assumption that would be made with a basic Pythagorean distance formula, which is that the points would be positioned on a flat plane. However, the data used to test the algorithm lacks any height variable and so is still unable to take altitude into account without further changes.
-Biodiversity Score (B-Score)
+
+### 2.3.3 Biodiversity Score (B-Score)
 The B-Score  is vital to assure the perpetuation of healthy and thriving forest environments. Many replantation efforts facilitate monocultures, which can lead to the suffocation of many native species in the area[https://earth.org/replanting-monoculture-plantations-is-not-reforestation-projects/]. The function has four arguments: position in longitude and latitude, species, and an acceptable range variable. The acceptable range variable culls the species array to those in a perimeter expressed in kilometers, the distance being calculated with the Haversine formula[https://iopscience.iop.org/article/10.1088/1742-6596/1500/1/012104/pdf]. This is necessary as the function must rank the trees by how rare they are in the area for replantation, not by how rare they are in the dataset. Given an indefinite area, the results would be skewed hugely by the species that have a large amount of specimens in a small area. After culling the array to species existing solely in the area of interest, we rank them in terms of the amount of each species in the area. The final equation amounts to:
-(amount of species * rank)
+```(amount of species * rank)```
 The score should be large, as the rank should be high indicating that there are species who are more common in the area, however there should not be an insignificant number of individuals present. Having a low rank and high individual count means that while there are other trees more common, this species has still proven to thrive in this environment. It helps encourage increased biodiversity while ensuring that the new species would still have a high survivability rate in the environment.
 
-Carbon Sequestration Score (C-Score)
+### 2.3.4 Carbon Sequestration Score (C-Score)
 The C-Score gives an estimation of how much carbon a given species could store at a given position. The function to evaluate the score takes position, species and acceptable range. It works by first culling the tree array to those of the specified species within a perimeter 1.5 times the size of acceptable range. Because these values are used as an estimation and not a calculation, it is better to have more samples that may be slightly less accurate than less samples with slightly higher relevance. It then uses an estimation for the amount of carbon in the tree. Wood mass is averaged at about 50% dry wood and 50% water weight. Dividing the mass by two isolates for the dry wood, which would contain the carbon and disregard the water. Of this dry wood, carbon takes about 48-50%[unsure if we can even use, but I can prove with chemical equations on my own easy enough] of the mass, which the algorithm resolves to 50%. And so the estimation for the amount of carbon in any tree, given mass, is 
-mass/4
+```mass/4```
 If we take the average mass of carbon among all the trees in the array, we should be able to get a rough estimate of how much carbon the tree will store in the future. The larger the number the more any tree's score is advantaged. A large factor that plays into carbon sequestration is biodiverse forests, a factor taken care of by the B-Score. [https://www.pnas.org/doi/10.1073/pnas.1700298114]
-Final Evaluation
+
+### 2.3.5 Final Evaluation
 The final calculation:
-(B-Score + C-Score) / N-Score
+```(B-Score + C-Score) / N-Score```
 In accordance with our criteria, the B-Score and C-Score should both increase while the N-Score decreases. In short, the algorithm should be encouraging biodiversity and carbon capture while discouraging non-native species. 
 Assessing the Algorithm
 In order to assess whether our created algorithm significantly improved forest health we simulated sample forests of 30 trees using the algorithm and using simple random sampling of trees. For each sample the forest was scored using 12 indicators from this study [https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10518842/]. This study created a quantifiable way to measure forest health through the use of several indicators, however, for our forest health score the data did not cover all indicators so we only used four indicators that pertained to our algorithm. After creating a sampling distribution, we took the summary statistics of both sample forest graphs and compared the forest score means and standard deviations in significance tests. The conditions were met because our simulation’s forest scores were independent, randomly sampled (in theory), and normally distributed because of the central limit theorem. We used a 2 sample t significance test with an alpha-level of 0.05 along with a 2-sample confidence interval of 90%.
